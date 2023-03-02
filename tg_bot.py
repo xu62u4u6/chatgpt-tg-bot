@@ -34,7 +34,7 @@ class TG_Bot:
         payload = {'chat_id': chat_id, 'text': text}
         return requests.post(url,json=payload)
     
-    def parse_massage(self, msg):
+    def parse_message(self, msg):
         msg_dir = {}
         msg_dir["date"] = msg["date"]
         msg_dir["chat_id"]  = msg["chat"]["id"]
