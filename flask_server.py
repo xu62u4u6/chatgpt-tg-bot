@@ -4,7 +4,7 @@ from tg_bot import TG_Bot
 import pandas as pd
 import requests
 import json
-
+from openai.error import InvalidRequestError
 # read config
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -65,8 +65,13 @@ def handle_message(message):
         if characters_number + len(msg_dir["text"]) > 3500:
             bot.reset(msg_dir["chat_id"])
             bot.send_message(msg_dir["chat_id"], "當前對話字數過多，已經自動開啟新對話串。")
-            
-        msg_dir['reply'] = bot.completion(msg_dir["chat_id"], msg_dir["text"])
+        
+        # if reach max context length
+        try:
+            msg_dir['reply'] = bot.completion(msg_dir["chat_id"], msg_dir["text"])
+        except InvalidRequestError:
+            bot.send_message(channel_chat_id, "已經達到最大字數，請使用/reset指令重設訊息")
+        
         bot.send_message(msg_dir["chat_id"], msg_dir['reply']+f"\n目前總字數: {characters_number+len(msg_dir['text'])+len(msg_dir['reply'])}/3500")
         bot.insert_msg(msg_dir["chat_id"], msg_dir["text"], msg_dir["reply"], msg_dir["date"])
         log_msg = f"{msg_dir['date']}||{msg_dir['chat_id']}||{msg_dir['text']}||{msg_dir['reply']}\n"
@@ -79,10 +84,13 @@ def handle_message(message):
 def handle_msg():
 
     data = request.get_json()
+    with open("log.txt", "a") as f:
+        f.write(str(data)+"\n")
+    
     if "reply_to_message" in data:
         return
 
-    elif "message" in data:
+    elif "message" in data and "text" in data["message"].keys():
         message = data["message"]
         if message["date"] < bot.init_time:
             return "old"
@@ -93,10 +101,6 @@ def handle_msg():
         callback_query_id = query["id"]
         data = query['data']
         handle_callback_query(callback_query_id, "Button pressed", True)
-
-    with open("log.txt", "a") as f:
-        f.write(str(data))
-        f.write("\n")
 
     return Response('ok', status=200)
 
