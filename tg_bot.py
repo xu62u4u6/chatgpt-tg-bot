@@ -65,6 +65,20 @@ class TG_Bot:
     def set_role(self, chat_id, role):
         self.users_msgs[chat_id][0]["content"] = f"You are a {role}."
 
+
+    """
+    def summarize(self, chat_id, words_count=500):
+        msg_list = self.users_msgs[chat_id].copy()
+        msg_list[0]["content"] =  f"Summarize into an outline within {words_count} words"
+        res = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo", messages=msg_list)
+        reply = res.choices[0].message.content
+        self.users_msgs[chat_id] = [self.users_msgs[chat_id]
+            [0], {"role": "assistant", "content": reply}]
+        return reply
+    """
+
+
     def completion(self, chat_id, text):
         # if new
         if chat_id not in self.users_msgs.keys():
