@@ -2,4 +2,4 @@ config.ini
 log*
 *.db
 __pycache__
-.sqlite
+*.sqlite
