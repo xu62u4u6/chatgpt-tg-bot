@@ -2,6 +2,7 @@ import requests
 import configparser
 import time
 import openai
+import sqlite3
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -29,7 +30,10 @@ class TG_Bot:
         self.send_message_url = f"https://api.telegram.org/bot{self.token}/sendMessage"
         self.init_time = time.time()
         self.users_msgs = {}
-
+        #self.connection = sqlite3.connect('chatgpt-tg-bot.sqlite')
+        #self.cursor = self.connection.cursor()
+        self.users = self.find_users()
+        
     def send_message(self, chat_id, text):
         payload = {'chat_id': chat_id, 'text': text}
         return requests.post(self.send_message_url, json=payload)
@@ -54,6 +58,7 @@ class TG_Bot:
         msg_dir["date"] = msg["date"]
         msg_dir["chat_id"] = msg["chat"]["id"]
         msg_dir["text"] = msg["text"]
+        if "username" in 
         for i in ["username", "first_name", "last_name"]:
             if i in msg.keys():
                 msg_dir[i] = msg[i]
@@ -91,3 +96,31 @@ class TG_Bot:
             {"role": "assistant", "content": reply}
         )
         return reply
+    
+    def user_exists(self, chat_id):
+        connection = sqlite3.connect('chatgpt-tg-bot.sqlite')
+        c = connection.cursor()
+        is_exist = c.execute(f"SELECT EXISTS(SELECT 1 FROM user_info WHERE chat_id = {chat_id} LIMIT 1)").fetchall()[0][0]
+        connection.close()
+        return is_exist
+
+    def insert_msg(self, chat_id, text, reply, received):
+        connection = sqlite3.connect('chatgpt-tg-bot.sqlite')
+        c = connection.cursor()
+        c.execute(f"INSERT INTO msg (chat_id, text, reply, received_time) VALUES ({chat_id}, '{text}', '{reply}', {received})")
+        connection.commit()
+        connection.close()
+        
+    def insert_user(self, chat_id, first_name, last_name, user_name):
+        connection = sqlite3.connect('chatgpt-tg-bot.sqlite')
+        c = connection.cursor()
+        c.execute(f"INSERT INTO user_info (chat_id, first_name, last_name, user_name) VALUES ({chat_id}, '{first_name}', '{last_name}', '{user_name}')")
+        connection.commit()
+        connection.close()
+        
+    def find_users(self):
+        connection = sqlite3.connect('chatgpt-tg-bot.sqlite')
+        c = connection.cursor()
+        users = set(chat_id_tuple[0] for chat_id_tuple in c.execute("SELECT chat_id FROM user_info").fetchall())
+        connection.close()
+        return users
