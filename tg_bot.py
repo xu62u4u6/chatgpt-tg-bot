@@ -58,10 +58,9 @@ class TG_Bot:
         msg_dir["date"] = msg["date"]
         msg_dir["chat_id"] = msg["chat"]["id"]
         msg_dir["text"] = msg["text"]
-        if "username" in 
         for i in ["username", "first_name", "last_name"]:
-            if i in msg.keys():
-                msg_dir[i] = msg[i]
+            if i in msg["chat"].keys():
+                msg_dir[i] = msg["chat"][i]
             else:
                 msg_dir[i] = None
 
