@@ -38,18 +38,36 @@ def handle_message(message):
         bot.reset(msg_dir["chat_id"])
         bot.send_message(msg_dir["chat_id"], "開啟新的對話串")
 
+    elif msg_dir["text"] == "/help" :
+        bot.send_message(msg_dir["chat_id"], "/reset 開啟新對話串，切換不同對話時使用。\n/role 角色(例如:英文翻譯)，指令會更精準。")
+
     elif "/role" in msg_dir["text"]:
         role = msg_dir["text"].replace("/role", "").strip()
         bot.set_role(msg_dir["chat_id"], role)
         bot.send_message(msg_dir["chat_id"], "已經重設角色為-{role}")
+    
+    #elif msg_dir["text"] == "/summarize":
+    #    summary = bot.summarize(msg_dir["chat_id"])
+    #    bot.send_message(msg_dir["chat_id"], "摘要內容如下:\n"+summary)
+        
     else:
         # first
         if msg_dir["chat_id"] not in bot.users:
             bot.users.add(msg_dir["chat_id"])
             bot.insert_user(msg_dir["chat_id"], msg_dir["first_name"], msg_dir["last_name"], msg_dir["username"])
         # not first
+        if msg_dir["chat_id"] in bot.users_msgs.keys():
+            characters_number = sum([len(d["content"]) for d in bot.users_msgs[msg_dir["chat_id"]]])
+        else:
+            characters_number = 0
+        
+        # if too many characters
+        if characters_number + len(msg_dir["text"]) > 3500:
+            bot.reset(msg_dir["chat_id"])
+            bot.send_message(msg_dir["chat_id"], "當前對話字數過多，已經自動開啟新對話串。")
+            
         msg_dir['reply'] = bot.completion(msg_dir["chat_id"], msg_dir["text"])
-        bot.send_message(msg_dir["chat_id"], msg_dir['reply'])
+        bot.send_message(msg_dir["chat_id"], msg_dir['reply']+f"\n目前總字數: {characters_number+len(msg_dir['text'])+len(msg_dir['reply'])}/3500")
         bot.insert_msg(msg_dir["chat_id"], msg_dir["text"], msg_dir["reply"], msg_dir["date"])
         log_msg = f"{msg_dir['date']}||{msg_dir['chat_id']}||{msg_dir['text']}||{msg_dir['reply']}\n"
         with open("log", "a") as f:
