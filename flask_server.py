@@ -36,11 +36,12 @@ def handle_message(message):
 
     elif msg_dir["text"] == "/reset":
         bot.reset(msg_dir["chat_id"])
-        bot.send_message(msg_dir["chat_id"], "已經重置訊息")
+        bot.send_message(msg_dir["chat_id"], "開啟新的對話串")
 
     elif "/role" in msg_dir["text"]:
-        role = msg_dir["text"].replace("/role ")
-        bot.reset(msg_dir["chat_id"], role)
+        role = msg_dir["text"].replace("/role", "").strip()
+        bot.set_role(msg_dir["chat_id"], role)
+        bot.send_message(msg_dir["chat_id"], "已經重設角色為-{role}")
     else:
         # first
         if msg_dir["chat_id"] not in bot.users:
