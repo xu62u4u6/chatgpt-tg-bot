@@ -65,7 +65,6 @@ class TG_Bot:
     def set_role(self, chat_id, role):
         self.users_msgs[chat_id][0]["content"] = f"You are a {role}."
 
-
     """
     def summarize(self, chat_id, words_count=500):
         msg_list = self.users_msgs[chat_id].copy()
@@ -77,7 +76,6 @@ class TG_Bot:
             [0], {"role": "assistant", "content": reply}]
         return reply
     """
-
 
     def completion(self, chat_id, text):
         # if new
@@ -107,8 +105,8 @@ class TG_Bot:
     def insert_msg(self, chat_id, text, reply, received):
         connection = sqlite3.connect('chatgpt-tg-bot.sqlite')
         c = connection.cursor()
-        c.execute(
-            f"INSERT INTO msg (chat_id, text, reply, received_time) VALUES ({chat_id}, '{text}', '{reply}', {received})")
+        c.execute("INSERT INTO msg (chat_id, text, reply, received_time) VALUES (?, ?, ?, ?)",
+                  (chat_id, text, reply, received))
         connection.commit()
         connection.close()
 
@@ -116,7 +114,8 @@ class TG_Bot:
         connection = sqlite3.connect('chatgpt-tg-bot.sqlite')
         c = connection.cursor()
         c.execute(
-            f"INSERT INTO user_info (chat_id, first_name, last_name, user_name) VALUES ({chat_id}, '{first_name}', '{last_name}', '{user_name}')")
+            f"INSERT INTO user_info (chat_id, first_name, last_name, user_name) VALUES (?, ?, ?, ?)",
+            (chat_id, first_name, last_name, user_name))
         connection.commit()
         connection.close()
 
