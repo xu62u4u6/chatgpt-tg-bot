@@ -42,8 +42,14 @@ def handle_message(message):
         role = msg_dir["text"].replace("/role ")
         bot.reset(msg_dir["chat_id"], role)
     else:
+        # first
+        if msg_dir["chat_id"] not in bot.users:
+            bot.users.add(msg_dir["chat_id"])
+            bot.insert_user(msg_dir["chat_id"], msg_dir["first_name"], msg_dir["last_name"], msg_dir["username"])
+        # not first
         msg_dir['reply'] = bot.completion(msg_dir["chat_id"], msg_dir["text"])
         bot.send_message(msg_dir["chat_id"], msg_dir['reply'])
+        bot.insert_msg(msg_dir["chat_id"], msg_dir["text"], msg_dir["reply"], msg_dir["date"])
         log_msg = f"{msg_dir['date']}||{msg_dir['chat_id']}||{msg_dir['text']}||{msg_dir['reply']}\n"
         with open("log", "a") as f:
             f.write(log_msg)
@@ -61,8 +67,6 @@ def handle_msg():
         message = data["message"]
         if message["date"] < bot.init_time:
             return "old"
-        chat_id = message["chat"]["id"]
-        text = message["text"]
         handle_message(message)
 
     elif "callback_query" in data:
@@ -82,3 +86,4 @@ if __name__ == '__main__':
     bot = TG_Bot()
     bot.set_webhook()
     app.run(port=5001)
+
