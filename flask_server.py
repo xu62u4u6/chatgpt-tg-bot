@@ -56,27 +56,17 @@ def handle_message(message):
             bot.users.add(msg_dir["chat_id"])
             bot.insert_user(msg_dir["chat_id"], msg_dir["first_name"], msg_dir["last_name"], msg_dir["username"])
         # not first
-        if msg_dir["chat_id"] in bot.users_msgs.keys():
-            characters_number = sum([len(d["content"]) for d in bot.users_msgs[msg_dir["chat_id"]]])
-        else:
-            characters_number = 0
-        
-        # if too many characters
-        if characters_number + len(msg_dir["text"]) > 3500:
-            bot.reset(msg_dir["chat_id"])
-            bot.send_message(msg_dir["chat_id"], "當前對話字數過多，已經自動開啟新對話串。")
         
         # if reach max context length
         try:
             msg_dir['reply'] = bot.completion(msg_dir["chat_id"], msg_dir["text"])
         except InvalidRequestError:
-            bot.send_message(channel_chat_id, "已經達到最大字數，請使用/reset指令重設訊息")
+            bot.send_message(channel_chat_id, "已經達到最大字數，請使用/reset指令重設訊息，再重新詢問。")
+            return
         
-        bot.send_message(msg_dir["chat_id"], msg_dir['reply']+f"\n目前總字數: {characters_number+len(msg_dir['text'])+len(msg_dir['reply'])}/3500")
+        bot.send_message(msg_dir["chat_id"], msg_dir['reply'])
         bot.insert_msg(msg_dir["chat_id"], msg_dir["text"], msg_dir["reply"], msg_dir["date"])
-        log_msg = f"{msg_dir['date']}||{msg_dir['chat_id']}||{msg_dir['text']}||{msg_dir['reply']}\n"
-        with open("log", "a") as f:
-            f.write(log_msg)
+        log_msg = f"{msg_dir['chat_id']}||{msg_dir['text']}||{msg_dir['reply']}\n"
         bot.send_message(channel_chat_id, log_msg)
 
 
