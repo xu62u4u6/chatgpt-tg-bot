@@ -61,7 +61,7 @@ def handle_message(message):
         try:
             msg_dir['reply'] = bot.completion(msg_dir["chat_id"], msg_dir["text"])
         except InvalidRequestError:
-            bot.send_message(channel_chat_id, "已經達到最大字數，請使用/reset指令重設訊息，再重新詢問。")
+            bot.send_message(msg_dir["chat_id"], "已經達到最大字數，請使用/reset指令重設訊息，再重新詢問。")
             return
         
         bot.send_message(msg_dir["chat_id"], msg_dir['reply'])
