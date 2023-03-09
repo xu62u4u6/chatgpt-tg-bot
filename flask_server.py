@@ -32,7 +32,7 @@ def handle_message(message):
     # command
     if msg_dir["text"] == "/start":
         bot.reset(msg_dir["chat_id"])
-        bot.send_message(msg_dir["chat_id"], "歡迎使用，本服務是串接ChatGPT API，注意，模型僅更新到2021。\n受限於API字數限制，單一對話不可超過4000字元，請適時使用/reset重置對話內容\n/reset 開啟新對話串，切換不同對話時使用。\n/role 角色(例如:英文翻譯)，指令會更精準。")
+        bot.send_message(msg_dir["chat_id"], "歡迎使用，本服務是串接ChatGPT API，注意，模型僅更新到2021(https://chat.openai.com/chat)\n受限於API字數限制，單一對話不可超過4000字元，請適時使用/reset重置對話內容\n/reset 開啟新對話串，切換不同對話時使用。\n/role 角色(例如:英文翻譯)，指令會更精準。")
 
     elif msg_dir["text"] == "/reset":
         bot.reset(msg_dir["chat_id"])
