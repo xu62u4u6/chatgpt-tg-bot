@@ -45,11 +45,7 @@ def handle_message(message):
         role = msg_dir["text"].replace("/role", "").strip()
         bot.set_role(msg_dir["chat_id"], role)
         bot.send_message(msg_dir["chat_id"], "已經重設角色為-{role}")
-    
-    #elif msg_dir["text"] == "/summarize":
-    #    summary = bot.summarize(msg_dir["chat_id"])
-    #    bot.send_message(msg_dir["chat_id"], "摘要內容如下:\n"+summary)
-        
+
     else:
         # first
         if msg_dir["chat_id"] not in bot.users:
