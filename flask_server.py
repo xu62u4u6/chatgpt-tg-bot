@@ -69,9 +69,8 @@ def handle_message(message):
         log_msg = f"{msg_dir['chat_id']}||{msg_dir['text']}||{msg_dir['reply']}\n"
         bot.send_message(channel_chat_id, log_msg)
 
-
-@app.route('/', methods=['POST'])
-def handle_msg():
+@app.route('/webhook', methods=['POST'])
+def webhook():
 
     data = request.get_json()
     with open("log.txt", "a") as f:
@@ -98,5 +97,6 @@ def handle_msg():
 if __name__ == '__main__':
     bot = TG_Bot()
     bot.set_webhook()
-    app.run(port=5001)
+    bot.send_message(channel_chat_id, "The webhook has been set up.")
+    app.run(host="0.0.0.0", port=5001)
 
