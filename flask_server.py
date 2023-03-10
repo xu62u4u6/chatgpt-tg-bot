@@ -44,7 +44,7 @@ def handle_message(message):
     elif "/role" in msg_dir["text"]:
         role = msg_dir["text"].replace("/role", "").strip()
         bot.set_role(msg_dir["chat_id"], role)
-        bot.send_message(msg_dir["chat_id"], "已經重設角色為-{role}")
+        bot.send_message(msg_dir["chat_id"], f"已經重設角色為-{role}")
 
     else:
         # first
