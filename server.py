@@ -32,14 +32,14 @@ def handle_message(message):
     # command
     if msg_dir["text"] == "/start":
         bot.reset(msg_dir["chat_id"])
-        bot.send_message(msg_dir["chat_id"], "歡迎使用，本服務串接ChatGPT API。\n\官方連結: https://chat.openai.com/chat\n請注意以下幾點:\n1. 模型僅更新到2021年。\n2. 受限於API字數限制，單一對話不可超過4000字元，請適時使用/reset重置對話內容\n3. 由於ChatGPT需要前後文才能進行預測，需將近期訊息紀錄在server，請不要傳送敏感文字如密碼或重要資訊。\n/reset 開啟新對話串，切換不同對話時使用。\n/role 角色(例如:英文翻譯)，指令會更精準。")
+        bot.send_message(msg_dir["chat_id"], "歡迎使用，本服務串接ChatGPT API。\n官方連結: https://chat.openai.com/chat\n\n請注意以下幾點:\n1. 模型僅更新到2021年。\n2. 受限於API字數限制，單一對話不可超過4000字元，請適時使用/reset重置對話內容\n3. 由於ChatGPT需要前後文才能進行預測，需將近期訊息紀錄在server，請不要傳送敏感文字如密碼或重要資訊。\n/reset 開啟新對話串，切換不同對話時使用。\n/role 角色(例如:英文翻譯)，指令會更精準。")
 
     elif msg_dir["text"] == "/reset":
         bot.reset(msg_dir["chat_id"])
         bot.send_message(msg_dir["chat_id"], "重置對話內容")
 
     elif msg_dir["text"] == "/help" :
-        bot.send_message(msg_dir["chat_id"], "本服務串接ChatGPT API。\n\官方連結: https://chat.openai.com/chat\n請注意以下幾點:\n1. 模型僅更新到2021年。\n2. 受限於API字數限制，單一對話不可超過4000字元，請適時使用/reset重置對話內容\n3. 由於ChatGPT需要前後文才能進行預測，需將近期訊息紀錄在server，請不要傳送敏感文字如密碼或重要資訊。\n/reset 開啟新對話串，切換不同對話時使用。\n/role 角色(例如:英文翻譯)，指令會更精準。")
+        bot.send_message(msg_dir["chat_id"], "本服務串接ChatGPT API。\n官方連結: https://chat.openai.com/chat\n\n請注意以下幾點:\n1. 模型僅更新到2021年。\n2. 受限於API字數限制，單一對話不可超過4000字元，請適時使用/reset重置對話內容\n3. 由於ChatGPT需要前後文才能進行預測，需將近期訊息紀錄在server，請不要傳送敏感文字如密碼或重要資訊。\n/reset 開啟新對話串，切換不同對話時使用。\n/role 角色(例如:英文翻譯)，指令會更精準。")
 
     elif "/role" in msg_dir["text"]:
         role = msg_dir["text"].replace("/role", "").strip()
