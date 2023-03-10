@@ -1,7 +1,16 @@
 ### SQL
-- [ ] sqlite
+- [x] sqlite
 
 ### Words
+- [ ] Daily words
 
-### Error Handling
-- [ ] if msg > 5000 words, make summary.
+### Bug
+- [x] if msg > 5000 words(hint /reset)
+- [x] SQL injection fix
+- [ ] POST formatting
+
+### Others
+- [X] Domain
+- [X] set DNS
+- [X] Cloudflare SSL
+- [ ] docker image
