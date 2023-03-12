@@ -14,3 +14,4 @@
 - [X] set DNS
 - [X] Cloudflare SSL
 - [ ] docker image
+- [ ] add audio to text (whisper)
