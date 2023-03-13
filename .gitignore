@@ -3,3 +3,4 @@ log*
 *.db
 __pycache__
 *.sqlite
+voice/
