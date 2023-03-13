@@ -15,7 +15,7 @@ class TG_Bot:
         openai.api_key = config["openai"]["key"]
         self.token = config["telegram"]["token"]
         self.webhook_url = config["telegram"]["webhook-url"]
-        self.send_message_url = f"https://api.telegram.org/bot{self.token}/sendMessage"
+        self.bot_url = f"https://api.telegram.org/bot{self.token}"
         self.init_time = time.time()
         self.users_msgs = {}
         #self.connection = sqlite3.connect('chatgpt-tg-bot.sqlite')
@@ -24,7 +24,7 @@ class TG_Bot:
 
     def send_message(self, chat_id, text):
         payload = {'chat_id': chat_id, 'text': text}
-        return requests.post(self.send_message_url, json=payload)
+        return requests.post(self.bot_url+"/sendMessage", json=payload)
 
     def get_file_path(self, file_id):
         url = f"https://api.telegram.org/bot{self.token}/getFile?file_id={file_id}"
@@ -41,14 +41,14 @@ class TG_Bot:
            
     def convert_mp3_to_text(self, audio_path):
         with open(audio_path, "rb") as audio:
-            return openai.Audio.transcribe("whisper-1", audio)
+            return openai.Audio.transcribe("whisper-1", audio)["text"]
 
     def send_inline_keyboard(self, chat_id, text):
         payload = {'chat_id': chat_id,
                    'text': text,
                    'reply_markup': {"inline_keyboard": [[{"text": "Button 1", "callback_data": "data1"}],
                                                         [{"text": "Button 2", "callback_data": "data2"}]]}}
-        return requests.post(self.send_message_url, json=payload)
+        return requests.post(self.bot_url+"/sendMessage", json=payload)
 
     def send_keyboard(self, chat_id, text):
         payload = {'chat_id': chat_id,
@@ -56,7 +56,7 @@ class TG_Bot:
                    'replyMarkup': {"keyboard": [["Option 1", "Option 2"],
                                                 ["Option 3", "Option 4"]],
                                    "one_time_keyboard": True}}
-        return requests.post(self.send_message_url, json=payload)
+        return requests.post(self.bot_url+"/sendMessage", json=payload)
 
     def parse_message(self, msg):
         msg_dir = {}
@@ -72,8 +72,8 @@ class TG_Bot:
         return msg_dir
 
     def set_webhook(self):
-        url = f'https://api.telegram.org/bot{self.token}/setWebhook?url={self.webhook_url}'
-        res = requests.post(url)
+        payload = {'url': self.webhook_url}
+        res = requests.post(self.bot_url+"/setWebhook", json=payload)
         return res.status_code, res.text
 
     def reset(self, chat_id, role="assistant"):
