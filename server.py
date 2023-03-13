@@ -26,7 +26,7 @@ def handle_callback_query(callback_query_id, text, alert):
     return json.loads(response.content)
 
 
-def handle_message(message):
+def handle_text(message):
     msg_dir = bot.parse_message(message)
 
     # command
@@ -57,7 +57,7 @@ def handle_message(message):
         try:
             msg_dir['reply'] = bot.completion(msg_dir["chat_id"], msg_dir["text"])
         except InvalidRequestError:
-            bot.send_message(msg_dir["chat_id"], "已經達到最大字數，請使用/reset指令重設訊息，再重新詢問。")
+            bot.send_message(msg_dir["chat_id"], "已經達到最大字數或目前無法使用\n，請使用/reset指令重設訊息，再重新詢問。")
             return
         
         bot.send_message(msg_dir["chat_id"], msg_dir['reply'])
@@ -67,7 +67,7 @@ def handle_message(message):
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    
+
     data = request.get_json()
     with open("log.txt", "a") as f:
         f.write(str(data)+"\n")
@@ -81,9 +81,10 @@ def webhook():
             return "old"
             
         if "text" in message.keys():
-            handle_message(message)
+            handle_text(message)
             
         elif "voice" in message.keys():
+
             chat_id = message["from"]["id"]
             voice = message["voice"]
 
@@ -97,7 +98,8 @@ def webhook():
             try:
                 reply = bot.completion(chat_id, text)
             except InvalidRequestError:
-                bot.send_message(chat_id, "已經達到最大字數，請使用/reset指令重設訊息，再重新詢問。")
+                bot.send_message(chat_id, "已經達到最大字數或目前無法使用\n，請使用/reset指令重設訊息，再重新詢問。")
+    
                 return
             bot.send_message(chat_id, reply)
             return Response('ok', status=200)
