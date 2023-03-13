@@ -1,3 +1,9 @@
+### Code
+- [ ] new class DB
+- [ ] new class Audio
+- [ ] new class Text
+- [ ] request limit
+
 ### SQL
 - [x] sqlite
 
@@ -13,5 +19,6 @@
 - [X] Domain
 - [X] set DNS
 - [X] Cloudflare SSL
+- [x] add audio to text (whisper)
 - [ ] docker image
-- [ ] add audio to text (whisper)
+
