@@ -67,7 +67,7 @@ def handle_message(message):
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-
+    
     data = request.get_json()
     with open("log.txt", "a") as f:
         f.write(str(data)+"\n")
@@ -75,12 +75,33 @@ def webhook():
     if "reply_to_message" in data:
         return
 
-    elif "message" in data and "text" in data["message"].keys():
+    elif "message" in data:
         message = data["message"]
         if message["date"] < bot.init_time:
             return "old"
-        handle_message(message)
+            
+        if "text" in message.keys():
+            handle_message(message)
+            
+        elif "voice" in message.keys():
+            chat_id = message["from"]["id"]
+            voice = message["voice"]
 
+            bot.send_message(channel_chat_id, f"voice, {voice['file_id']}, {voice['duration']}")
+            oga_path = bot.get_file_path(voice["file_id"])
+            mp3_path = oga_path.replace("oga", "mp3")
+            bot.download_audio(oga_path)
+            bot.convert_oga_to_mp3(oga_path, mp3_path)
+            text = bot.convert_mp3_to_text(mp3_path)
+            #bot.send_message(chat_id, text)
+            try:
+                reply = bot.completion(chat_id, text)
+            except InvalidRequestError:
+                bot.send_message(chat_id, "已經達到最大字數，請使用/reset指令重設訊息，再重新詢問。")
+                return
+            bot.send_message(chat_id, reply)
+            return Response('ok', status=200)
+            
     elif "callback_query" in data:
         query = data["callback_query"]
         callback_query_id = query["id"]
@@ -92,7 +113,11 @@ def webhook():
 
 if __name__ == '__main__':
     bot = TG_Bot()
-    bot.set_webhook()
-    bot.send_message(channel_chat_id, "The webhook has been set up.")
+    status_code, _ = bot.set_webhook()
+    if status_code == 200:
+        bot.send_message(channel_chat_id, "The webhook has been set up.")
+    else:
+        bot.send_message(channel_chat_id, "The webhook seting is fail.")
+        
     app.run(host="0.0.0.0", port=5001)
 
