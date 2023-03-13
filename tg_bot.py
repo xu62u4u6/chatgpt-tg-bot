@@ -3,6 +3,8 @@ import configparser
 import time
 import openai
 import sqlite3
+import urllib.request
+from pydub import AudioSegment
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -23,6 +25,23 @@ class TG_Bot:
     def send_message(self, chat_id, text):
         payload = {'chat_id': chat_id, 'text': text}
         return requests.post(self.send_message_url, json=payload)
+
+    def get_file_path(self, file_id):
+        url = f"https://api.telegram.org/bot{self.token}/getFile?file_id={file_id}"
+        res = requests.get(url)
+        return res.json()["result"]["file_path"]
+    
+    def download_audio(self, file_path):
+        url = f"https://api.telegram.org/file/bot{self.token}/{file_path}"
+        urllib.request.urlretrieve(url, file_path)#.replace("oga", "mp3"))
+    
+    def convert_oga_to_mp3(self, oga_path, mp3_path):
+        audio = AudioSegment.from_file(oga_path, format="ogg")
+        audio.export(mp3_path, format="mp3") 
+           
+    def convert_mp3_to_text(self, audio_path):
+        with open(audio_path, "rb") as audio:
+            return openai.Audio.transcribe("whisper-1", audio)
 
     def send_inline_keyboard(self, chat_id, text):
         payload = {'chat_id': chat_id,
