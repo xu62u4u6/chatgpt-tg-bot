@@ -9,6 +9,65 @@ from pydub import AudioSegment
 config = configparser.ConfigParser()
 config.read('config.ini')
 
+class Database:
+    def __init__(self, db_name='chatgpt-tg-bot.sqlite'):
+        self.db_name = db_name
+
+    def create(self):
+        self.cursor.execute(
+            '''CREATE TABLE user_info (
+                chat_id INTEGER PRIMARY KEY,
+                first_name TEXT,
+                last_name TEXT,
+                user_name TEXT,
+                created_at DEFAULT CURRENT_TIMESTAMP    
+            )'''      
+        )
+        self.cursor.execute(
+            '''CREATE TABLE msg (
+                msg_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                chat_id INTEGER NOT NULL,
+                raw_text TEXT NOT NULL,
+                translated_text TEXT,
+                received_time TIMESTAMP NOT NULL,
+                created_at DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(chat_id) REFERENCES user_info(chat_id)
+            )'''      
+        )
+        self.connection.commit()
+        
+    def user_exists(self, chat_id):
+        connection = sqlite3.connect(self.db_name)
+        c = connection.cursor()
+        is_exist = c.execute(
+            f"SELECT EXISTS(SELECT 1 FROM user_info WHERE chat_id = {chat_id} LIMIT 1)").fetchall()[0][0]
+        connection.close()
+        return is_exist
+
+    def insert_msg(self, chat_id, text, reply, received):
+        connection = sqlite3.connect(self.db_name)
+        c = connection.cursor()
+        c.execute("INSERT INTO msg (chat_id, text, reply, received_time) VALUES (?, ?, ?, ?)",
+                  (chat_id, text, reply, received))
+        connection.commit()
+        connection.close()
+
+    def insert_user(self, chat_id, first_name, last_name, user_name):
+        connection = sqlite3.connect(self.db_name)
+        c = connection.cursor()
+        c.execute(
+            f"INSERT INTO user_info (chat_id, first_name, last_name, user_name) VALUES (?, ?, ?, ?)",
+            (chat_id, first_name, last_name, user_name))
+        connection.commit()
+        connection.close()
+
+    def find_users(self):
+        connection = sqlite3.connect(self.db_name)
+        c = connection.cursor()
+        users = set(chat_id_tuple[0] for chat_id_tuple in c.execute(
+            "SELECT chat_id FROM user_info").fetchall())
+        connection.close()
+        return users    
 
 class TG_Bot:
     def __init__(self):
@@ -18,8 +77,7 @@ class TG_Bot:
         self.bot_url = f"https://api.telegram.org/bot{self.token}"
         self.init_time = time.time()
         self.users_msgs = {}
-        #self.connection = sqlite3.connect('chatgpt-tg-bot.sqlite')
-        #self.cursor = self.connection.cursor()
+        self.db = Database()
         self.users = self.find_users()
 
     def send_message(self, chat_id, text):
@@ -106,36 +164,3 @@ class TG_Bot:
             {"role": "assistant", "content": reply}
         )
         return reply
-
-    def user_exists(self, chat_id):
-        connection = sqlite3.connect('chatgpt-tg-bot.sqlite')
-        c = connection.cursor()
-        is_exist = c.execute(
-            f"SELECT EXISTS(SELECT 1 FROM user_info WHERE chat_id = {chat_id} LIMIT 1)").fetchall()[0][0]
-        connection.close()
-        return is_exist
-
-    def insert_msg(self, chat_id, text, reply, received):
-        connection = sqlite3.connect('chatgpt-tg-bot.sqlite')
-        c = connection.cursor()
-        c.execute("INSERT INTO msg (chat_id, text, reply, received_time) VALUES (?, ?, ?, ?)",
-                  (chat_id, text, reply, received))
-        connection.commit()
-        connection.close()
-
-    def insert_user(self, chat_id, first_name, last_name, user_name):
-        connection = sqlite3.connect('chatgpt-tg-bot.sqlite')
-        c = connection.cursor()
-        c.execute(
-            f"INSERT INTO user_info (chat_id, first_name, last_name, user_name) VALUES (?, ?, ?, ?)",
-            (chat_id, first_name, last_name, user_name))
-        connection.commit()
-        connection.close()
-
-    def find_users(self):
-        connection = sqlite3.connect('chatgpt-tg-bot.sqlite')
-        c = connection.cursor()
-        users = set(chat_id_tuple[0] for chat_id_tuple in c.execute(
-            "SELECT chat_id FROM user_info").fetchall())
-        connection.close()
-        return users
