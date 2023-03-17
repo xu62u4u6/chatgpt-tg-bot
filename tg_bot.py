@@ -92,9 +92,15 @@ class TG_Bot:
         self.users_msgs[chat_id].append(
             {"role": "user", "content": text}
         )
-
-        res = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo", messages=self.users_msgs[chat_id])
+        try:
+            res = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo", messages=self.users_msgs[chat_id])
+        except openai.error.RateLimitError:
+            return "目前受到速率限制，請稍後再詢問"
+        
+        except openai.error.InvalidRequestError:
+            return "已經達到最大字數或目前無法使用\n，請使用/reset指令重設訊息，再重新詢問。"
+        
         reply = res.choices[0].message.content
         self.users_msgs[chat_id].append(
             {"role": "assistant", "content": reply}
