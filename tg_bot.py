@@ -23,7 +23,7 @@ class TG_Bot:
         self.users = self.find_users()
 
     def send_message(self, chat_id, text):
-        payload = {'chat_id': chat_id, 'text': text}
+        payload = {'chat_id': chat_id, 'text': text, "parse_mode": "markdown"}
         return requests.post(self.bot_url+"/sendMessage", json=payload)
 
     def get_file_path(self, file_id):
