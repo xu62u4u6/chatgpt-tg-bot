@@ -3,6 +3,7 @@ import configparser
 import time
 import openai
 import sqlite3
+import json
 import urllib.request
 from pydub import AudioSegment
 import hashlib
@@ -179,6 +180,47 @@ class TG_Bot:
             {"role": "assistant", "content": reply}
         )
         return reply
+
+    def search(self, chat_id):
+        if chat_id not in self.users_msgs.keys():
+            self.reset(chat_id)        
+        tmp_msgs = self.users_msgs[chat_id] + [{"role": "user", "content": "從先前對話中提取最重要的三個英語關鍵字，以格式keywords: keyword1, keyword2"}]
+        chat_id_hash = self.calculate_chat_id_hash(chat_id)
+        try:    
+            reply = self.completion(chat_id_hash, tmp_msgs)
+            
+        except TimeoutException:
+            return "與伺服器連接超時，請稍後嘗試。"
+        
+        except openai.error.RateLimitError:
+            return "目前受到速率限制，請稍後再詢問"
+        
+        except openai.error.InvalidRequestError:
+            return "已經達到最大字數或目前無法使用\n，請使用/reset指令重設訊息，再重新詢問。"
+        
+        keywords = reply.replace("keywords: ", "")
+        params = {
+        "q": keywords,
+        "cx": self.cx,
+        "key": self.google_key
+        }
+
+        # 通過 API 查詢結果
+        try:
+            response = requests.get("https://www.googleapis.com/customsearch/v1", params=params)
+        except:
+            return "目前無法進行搜尋"
+
+        # 解析 JSON 結果
+        result = json.loads(response.text)
+        
+        # 遍歷所有搜索結果
+        results = []
+        for item in result["items"][:10]:
+            # 讀取標題、描述和網址
+            results.append(f"{item['title']}\n{item['snippet']}\n{item['link']}\n")
+            
+        return keywords, "\n".join(results)
 
     def broadcast(self, text):
         chat_ids = self.db.find_users()
