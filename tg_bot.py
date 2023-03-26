@@ -164,3 +164,9 @@ class TG_Bot:
             {"role": "assistant", "content": reply}
         )
         return reply
+
+    def broadcast(self, text):
+        chat_ids = self.db.find_users()
+        
+        for chat_id in chat_ids:
+            self.send_message(chat_id, text)
