@@ -6,6 +6,7 @@ import sqlite3
 import urllib.request
 from pydub import AudioSegment
 import hashlib
+from timeout_decorator import timeout, TimeoutError
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -142,28 +143,38 @@ class TG_Bot:
     def set_role(self, chat_id, role):
         self.users_msgs[chat_id][0]["content"] = f"You are a {role}."
 
+    @timeout(60, use_signals=False)
+    def completion(self, chat_id_hash, msgs):
+        res = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo-0301", messages=msgs, user=chat_id_hash)
+        reply = res.choices[0].message.content
+        return reply
+    
     def calculate_chat_id_hash(self, chat_id):
         salted = str(chat_id) + self.salt
         sha1 = hashlib.sha1()
         sha1.update(salted.encode("utf-8"))
         return sha1.hexdigest()
+
+    def chat(self, chat_id, text):
         # if new
         if chat_id not in self.users_msgs.keys():
             self.reset(chat_id)
-
+        chat_id_hash = self.calculate_chat_id_hash(chat_id)
         self.users_msgs[chat_id].append(
             {"role": "user", "content": text}
         )
-        try:
-            res = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo", messages=self.users_msgs[chat_id])
+        try:    
+            reply = self.completion(chat_id_hash, self.users_msgs[chat_id])
+            
+        except TimeoutError:
+            return "與伺服器連接超時，請稍後嘗試。"
+        
         except openai.error.RateLimitError:
             return "目前受到速率限制，請稍後再詢問"
         
         except openai.error.InvalidRequestError:
             return "已經達到最大字數或目前無法使用\n，請使用/reset指令重設訊息，再重新詢問。"
-        
-        reply = res.choices[0].message.content
         self.users_msgs[chat_id].append(
             {"role": "assistant", "content": reply}
         )
