@@ -5,6 +5,7 @@ import openai
 import sqlite3
 import urllib.request
 from pydub import AudioSegment
+import hashlib
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -78,8 +79,7 @@ class TG_Bot:
         self.init_time = time.time()
         self.users_msgs = {}
         self.db = Database()
-        self.users = self.find_users()
-
+        self.salt = config["openai"]["salt"]
     def send_message(self, chat_id, text):
         payload = {'chat_id': chat_id, 'text': text, "parse_mode": "markdown"}
         return requests.post(self.bot_url+"/sendMessage", json=payload)
@@ -142,7 +142,11 @@ class TG_Bot:
     def set_role(self, chat_id, role):
         self.users_msgs[chat_id][0]["content"] = f"You are a {role}."
 
-    def completion(self, chat_id, text):
+    def calculate_chat_id_hash(self, chat_id):
+        salted = str(chat_id) + self.salt
+        sha1 = hashlib.sha1()
+        sha1.update(salted.encode("utf-8"))
+        return sha1.hexdigest()
         # if new
         if chat_id not in self.users_msgs.keys():
             self.reset(chat_id)
