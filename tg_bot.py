@@ -81,9 +81,13 @@ class TG_Bot:
         self.init_time = time.time()
         self.users_msgs = {}
         self.db = Database()
+        self.users = self.db.find_users()
+        self.cx = config["google"]["cx"]
+        self.google_key = config["google"]["key"]
         self.salt = config["openai"]["salt"]
-    def send_message(self, chat_id, text):
-        payload = {'chat_id': chat_id, 'text': text, "parse_mode": "markdown"}
+        
+    def send_message(self, chat_id, text, parse_mode="markdown"):
+        payload = {'chat_id': chat_id, 'text': text, "parse_mode": parse_mode}
         return requests.post(self.bot_url+"/sendMessage", json=payload)
 
     def get_file_path(self, file_id):
@@ -189,7 +193,7 @@ class TG_Bot:
         try:    
             reply = self.completion(chat_id_hash, tmp_msgs)
             
-        except TimeoutException:
+        except TimeoutError:
             return "與伺服器連接超時，請稍後嘗試。"
         
         except openai.error.RateLimitError:
@@ -220,7 +224,7 @@ class TG_Bot:
             # 讀取標題、描述和網址
             results.append(f"{item['title']}\n{item['snippet']}\n{item['link']}\n")
             
-        return keywords, "\n".join(results)
+        return "\n".join(results)
 
     def broadcast(self, text):
         chat_ids = self.db.find_users()
