@@ -46,23 +46,30 @@ class Database:
             f"SELECT EXISTS(SELECT 1 FROM user_info WHERE chat_id = {chat_id} LIMIT 1)").fetchall()[0][0]
         connection.close()
         return is_exist
+    
+    def execute_query(self, query, params, commit=False):
+        connection = sqlite3.connect(self.db_name)
+        c = connection.cursor()
+        result = c.execute(query, params)
+        if commit:
+           connection.commit()
+        connection.close()
+        return result
 
     def insert_msg(self, chat_id, text, reply, received):
-        connection = sqlite3.connect(self.db_name)
-        c = connection.cursor()
-        c.execute("INSERT INTO msg (chat_id, text, reply, received_time) VALUES (?, ?, ?, ?)",
-                  (chat_id, text, reply, received))
-        connection.commit()
-        connection.close()
+        query = "INSERT INTO msg (chat_id, text, reply, received_time) VALUES (?, ?, ?, ?)"
+        params = (chat_id, text, reply, received)
+        self.execute_query(query, params, commit=True)
 
     def insert_user(self, chat_id, first_name, last_name, user_name):
-        connection = sqlite3.connect(self.db_name)
-        c = connection.cursor()
-        c.execute(
-            f"INSERT INTO user_info (chat_id, first_name, last_name, user_name) VALUES (?, ?, ?, ?)",
-            (chat_id, first_name, last_name, user_name))
-        connection.commit()
-        connection.close()
+        query = "INSERT INTO user_info (chat_id, first_name, last_name, user_name) VALUES (?, ?, ?, ?)"
+        params = (chat_id, first_name, last_name, user_name)
+        self.execute_query(query, params, commit=True)
+
+    def insert_chat_id(self, chat_id):
+        query = "INSERT INTO user_info (chat_id) VALUES (?)"
+        params = (chat_id,)
+        self.execute_query(query, params, commit=True)
 
     def find_users(self):
         connection = sqlite3.connect(self.db_name)
