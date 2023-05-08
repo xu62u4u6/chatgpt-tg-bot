@@ -18,16 +18,17 @@ app = Flask(__name__)
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-
-    data = request.get_json()
+    post = request.get_json()
+    if "update_id" not in post:
+        return 
     with open("log.txt", "a") as f:
-        f.write(str(data)+"\n")
-    
-    if "reply_to_message" in data:
+        f.write(str(post)+"\n")
+    # is telegram format
+    if "reply_to_message" in post:
         return
-
-    elif "message" in data:
-        message = data["message"]
+    
+    elif "message" in post:
+        message = post["message"]
         if message["date"] < bot.init_time:
             return "old"
         date = message["date"]
