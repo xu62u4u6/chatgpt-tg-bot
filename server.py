@@ -79,5 +79,5 @@ if __name__ == '__main__':
     else:
         bot.send_message(channel_chat_id, "The webhook setting is fail.") 
         
-    app.run(host="0.0.0.0", port=5001)
+    app.run(host=config["local"]["ip"], port=config["local"]["port"])
 
