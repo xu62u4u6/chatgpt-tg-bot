@@ -77,7 +77,7 @@ if __name__ == '__main__':
     if status_code == 200:
         bot.send_message(channel_chat_id, "The webhook has been set up.")
     else:
-        bot.send_message(channel_chat_id, "The webhook seting is fail.")
+        bot.send_message(channel_chat_id, "The webhook setting is fail.") 
         
     app.run(host="0.0.0.0", port=5001)
 
